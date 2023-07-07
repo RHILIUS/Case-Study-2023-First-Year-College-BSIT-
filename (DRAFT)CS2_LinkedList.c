@@ -7,34 +7,90 @@ typedef struct Node {
   struct Node *prev;
   struct Node *next;
 } Node;
+
 typedef struct DoublyLinkedList {
   Node *head;
   Node *tail;
 } DoublyLinkedList;
 
+// FUNCTION DECLARATIONS
+int prompt();
+DoublyLinkedList createList();
+void displayList(DoublyLinkedList list);
+void displayNormal(DoublyLinkedList list);
+void displayReverse(DoublyLinkedList list);
+void sortAscending(DoublyLinkedList list);
+void sortDescending(DoublyLinkedList list);
+void insertNode(DoublyLinkedList *list);
+void deleteNode(DoublyLinkedList *list);
+void searchNumber(DoublyLinkedList list);
+
+void freeList(DoublyLinkedList* list);
+
+// MENU FUNCTIONS
+int showInitialMenu();
+int showMainMenu();
+void showOption2SubMenu();
+void showOption3SubMenu();
+
 // GLOBAL DECLARATION
 DoublyLinkedList list;
 
-// FUNCTION PROTOTYPE
-void showMainMenu();
-DoublyLinkedList createList();
-void displayList();
-void displayNormalOrder();
-void displayReverseOrder();
-void freeList(DoublyLinkedList* list);
-void sortAscending(DoublyLinkedList list);
-void sortDescending(DoublyLinkedList list);
+// MAIN
+int main() {
+  system("cls");
 
-// FORMS
-void displayEmptyListMenu() {
+  // Display Menu
+  /* If the list is empty, the menu should only include the 'Create a Doubly Linked List' and 'Exit' options. Otherwise, all options are available.*/ 
+  if (list.head == NULL) {
+    showInitialMenu();
+  } else {
+    showMainMenu();
+  }
+  freeList(&list);
+
+  return 0;
+}
+
+int showInitialMenu() {
+  int selectedOption;
   printf(" \
               MAIN MENU\n\
   \n\
   1. Create a Doubly Linked List\n\
   2. Exit\n\
-");
+  ");
+  selectedOption = prompt();
+
+  switch (selectedOption) {
+      case 1:
+        system("cls");
+        printf("Create a Doubly Linked List\n");
+        list = createList();
+        system("cls");
+        if (list.head == NULL) {
+          printf("The list is empty!\n"); 
+          showInitialMenu();
+        } else {
+          printf("\nYou successfully created your doubly linked list!\n");
+          showMainMenu();
+        }
+        break;
+      case 2:
+        system("cls");
+        printf("Thank you for using the program. Have a great day!\n");
+        return 0;
+        break;
+      default:
+        system("cls");
+        printf("Invalid choice!\n");
+        main();
+  }
+  return 0;
 }
- void displayMainMenu() {
+
+int showMainMenu() {
+  int selectedOption;
   printf("\
               MAIN MENU\n\
   \n\
@@ -50,114 +106,9 @@ void displayEmptyListMenu() {
   6. Search a Number in the List\n\
   7. Exit\n \
   ");
- }
-void displayOption2SubMenu() {
-  printf("\
-  Display a Doubly Linked List\n\
-    1. Normal Order\n\
-    2. Reverse Order\n\
-    3. Back\n\
-  ");
-}
-void displayOption3SubMenu() {
-  int selectedOption;
-  printf("\
-  Sort a Doubly Linked List\n\
-    1. Ascending\n\
-    2. Descending\n\
-    3. Back\n\
-  ");
-  printf("Enter choice: ");
-  scanf("%d", &selectedOption);
+  selectedOption = prompt();
 
   switch (selectedOption) {
-    case 1:
-      system("cls");
-      printf("The list is successfully sorted to Ascending Order\n");
-      sortAscending(list);
-      printf("Press any key to exit...");
-      scanf("\n");
-      getchar();
-      system("cls");
-      displayOption3SubMenu();
-      break;
-    case 2: 
-      system("cls");
-      printf("The list is successfully sorted to Descending Order\n");
-      sortDescending(list);
-      printf("Press any key to exit...");
-      scanf("\n");
-      system("cls");
-      getchar();
-      displayOption3SubMenu();
-      break;
-    case 3:
-      system("cls");
-      showMainMenu();
-    default:
-      system("cls");
-      printf("Invalid choice\n");
-      displayOption3SubMenu();
-  }
-}
-
-// MAIN
-int main() {
- 
-  system("cls");
-  showMainMenu();
-  freeList(&list);
-
-}
-
-// FUNCTIONS
-void showMainMenu() {
-  int selectedOption;
-  int listIsEmpty; // boolean
-
-  // Determine whether list is empty or not
-  if (list.head == NULL) {
-    listIsEmpty = 1;
-  } else {
-    listIsEmpty = 0;
-  }
-
-  // Display Menu 
-  /* If the list is empty, the menu should only include the 'Create a Doubly Linked List' and 'Exit' options. Otherwise, all options are available.*/ 
-  if (listIsEmpty) {
-    displayEmptyListMenu();    
-  } else {
-    displayMainMenu();
-  }
-  printf("\nEnter choice: ");
-  scanf("%d", &selectedOption);
-  
-  if (listIsEmpty) {
-    switch (selectedOption) {
-    case 1:
-      system("cls");
-      printf("Create a Doubly Linked List\n");
-      list = createList();
-      system("cls");
-      if (list.head == NULL) {
-        printf("The list is empty!\n"); 
-      } else {
-        printf("\nYou successfully created your doubly linked list!\n");
-      }
-      showMainMenu();
-      break;
-    case 2:
-      system("cls");
-      printf("Thank you for using the program. Have a great day!\n");
-      exit(0);
-      break;
-    default:
-      system("cls");
-      printf("Invalid choice!\n");
-      showMainMenu();
-  }
-  } else {
-    switch (selectedOption) {
     case 1:
       system("cls");
       printf("Create a Doubly Linked List\n");
@@ -173,40 +124,103 @@ void showMainMenu() {
     case 2:
       system("cls");
       displayList(list);
+      showMainMenu();
       break;
     case 3:
       system("cls");
-      displayOption3SubMenu();
+      showOption3SubMenu();
       break;
     case 4:
       system("cls");
-      printf("You clicked four\n");
+      insertNode(&list);
+      showMainMenu();
       break;
     case 5:
       system("cls");
-      printf("You clicked five\n");
+      deleteNode(&list);
+      showMainMenu();
       break;
     case 6:
       system("cls");
-      printf("You clicked six\n");
+      searchNumber(list);
+      showMainMenu();
       break;
     case 7:
       system("cls");
       printf("Thank you for using the program. Have a great day!\n");
-      exit(0);
-      break;
+      return 0;
     default:
       system("cls");
       printf("Invalid choice!\n");
       showMainMenu();
   }
+  return 0;
+}
+
+void showOption2SubMenu() {
+  printf("\
+  Display a Doubly Linked List\n\
+    1. Normal Order\n\
+    2. Reverse Order\n\
+    3. Back\n\
+  ");
+}
+
+void showOption3SubMenu() {
+  int selectedOption; 
+  printf("\
+  Sort a Doubly Linked List\n\
+    1. Ascending\n\
+    2. Descending\n\
+    3. Back\n\
+  ");
+  selectedOption = prompt();
+
+  switch (selectedOption) {
+    case 1:
+      system("cls");
+      printf("The list is successfully sorted in Ascending Order\n");
+      sortAscending(list);
+      printf("Press any key to exit...");
+      scanf("\n");
+      getchar();
+      system("cls");
+      showOption3SubMenu();
+      break;
+    case 2: 
+      system("cls");
+      printf("The list is successfully sorted in Descending Order\n");
+      sortDescending(list);
+      printf("Press any key to exit...");
+      scanf("\n");
+      system("cls");
+      getchar();
+      showOption3SubMenu();
+      break;
+    case 3:
+      system("cls");
+      showMainMenu();
+      break;
+    default:
+      system("cls");
+      printf("Invalid choice\n");
+      showOption3SubMenu();
   }
-} 
+}
+
+int prompt() {
+  int selectedOption;
+  printf("\nEnter choice: ");
+  scanf("%d", &selectedOption);
+
+  return selectedOption;
+}
+
 DoublyLinkedList createList() {
   DoublyLinkedList list;
-  list.head = NULL;
   Node *curr;
   int val;
+  list.head = NULL;
 
   system("cls");
   printf("Insert values for your doubly linked list\n\n");
@@ -217,7 +231,7 @@ DoublyLinkedList createList() {
     if (val != 0) {
       curr = (Node*)malloc(sizeof(Node));
       curr->val = val;
-      
+
       if (list.head == NULL) {
         list.head = curr;
         list.tail = curr;
@@ -234,9 +248,10 @@ DoublyLinkedList createList() {
 
   return list;
 }
+
 void displayList(DoublyLinkedList list) {
   int selectedOption;
-  displayOption2SubMenu();
+  showOption2SubMenu();
   printf("\nEnter choice: ");
   scanf("%d", &selectedOption);
 
@@ -244,17 +259,21 @@ void displayList(DoublyLinkedList list) {
     case 1:
       system("cls");
       printf("You selected normal order\n");
-      displayNormalOrder(list);
+      displayNormal(list);
+
+      printf("\nPress any key to exit...");
+      scanf("\n");
+      getchar();
+      system("cls");
       break;
     case 2:
       system("cls");
       printf("You selected reverse order\n");
-      displayReverseOrder(list);
+      displayReverse(list);
       break;
     case 3:
       system("cls");
       printf("You selected back\n");
-      showMainMenu();
       break;
     default:
       system("cls");
@@ -262,37 +281,35 @@ void displayList(DoublyLinkedList list) {
       displayList(list);
   }
 }
-void displayNormalOrder(DoublyLinkedList list) {
+
+void displayNormal(DoublyLinkedList list) {
   Node *curr = list.head;
   system("cls");
   printf("Here is your doubly linked list in normal order\n\n");
 
-  do {
+  while (curr != NULL) {
     printf("%d|", curr->val);
     curr = curr->next;
-  } while (curr != NULL);
+  }
   printf("\n");
-  printf("\nPress any key to exit...");
-  scanf("\n");
-  getchar();
-  system("cls");
-  displayList(list);
+ 
 }
-void displayReverseOrder(DoublyLinkedList list) {
+
+void displayReverse(DoublyLinkedList list) {
   Node *curr = list.tail;
   system("cls");
   printf("Here is your doubly linked list in reverse order\n\n");
-  do {
+  while (curr != NULL) {
     printf("%d|", curr->val);
     curr = curr->prev;
-  } while (curr != NULL);
+  }
   printf("\n");
   printf("\nPress any key to exit...");
   scanf("\n");
   getchar();
   system("cls");
-  displayList(list);
 }
+
 void sortAscending(DoublyLinkedList list) {
   Node *curr = list.head;
   int temp;
@@ -301,7 +318,7 @@ void sortAscending(DoublyLinkedList list) {
   while (switched) {
     switched = 0;
     curr = list.head;
-    while(curr->next != NULL) {
+    while (curr->next != NULL) {
       if (curr->val > curr->next->val) {
         temp = curr->val;
         curr->val = curr->next->val;
@@ -312,6 +329,7 @@ void sortAscending(DoublyLinkedList list) {
    }
   }
 }
+
 void sortDescending(DoublyLinkedList list) {
   Node *curr = list.tail;
   int temp;
@@ -320,7 +338,7 @@ void sortDescending(DoublyLinkedList list) {
   while (switched) {
     switched = 0;
     curr = list.tail;
-    while(curr->prev != NULL) {
+    while (curr->prev != NULL) {
       if (curr->val > curr->prev->val) {
         temp = curr->val;
         curr->val = curr->prev->val;
@@ -331,6 +349,118 @@ void sortDescending(DoublyLinkedList list) {
    }
   }
 }
+
+void insertNode(DoublyLinkedList *list) {
+  int val;
+  printf("Enter the value to insert: ");
+  scanf("%d", &val);
+
+  Node *newNode = (Node*)malloc(sizeof(Node));
+  newNode->val = val;
+  newNode->prev = NULL;
+  newNode->next = NULL;
+
+  if (list->head == NULL) {
+    list->head = newNode;
+    list->tail = newNode;
+  } else {
+    int position;
+    displayNormal(*list);
+    printf("Enter the position to insert (1 for first, 2 for second, and so on): ");
+    scanf("%d", &position);
+
+    Node *curr = list->head;
+    int count = 1;
+
+    while (curr != NULL && count < position) {
+      curr = curr->next;
+      count++;
+    }
+    
+    system("cls");
+    if (curr == NULL) {
+      printf("Invalid position!\n");
+      free(newNode);
+    } else {
+      newNode->prev = curr->prev;
+      newNode->next = curr;
+      if (curr->prev != NULL) {
+        curr->prev->next = newNode;
+      } else {
+        list->head = newNode;
+      }
+      curr->prev = newNode;
+    }
+  }
+}
+
+void deleteNode(DoublyLinkedList *list) {
+  if (list->head == NULL) {
+    printf("The list is empty!\n");
+    return;
+  }
+
+  int position;
+  displayNormal(*list);
+  printf("Enter the position to delete (1 for first, 2 for second, and so on): ");
+  scanf("%d", &position);
+  system("cls");
+  Node *curr = list->head;
+  int count = 1;
+
+  while (curr != NULL && count < position) {
+    curr = curr->next;
+    count++;
+  }
+
+  if (curr == NULL) {
+    printf("Invalid position!\n");
+  } else {
+    if (curr->prev != NULL) {
+      curr->prev->next = curr->next;
+    } else {
+      list->head = curr->next;
+    }
+
+    if (curr->next != NULL) {
+      curr->next->prev = curr->prev;
+    } else {
+      list->tail = curr->prev;
+    }
+
+    free(curr);
+    printf("Node at position %d has been deleted.\n", position);
+  }
+}
+
+void searchNumber(DoublyLinkedList list) {
+  if (list.head == NULL) {
+    printf("The list is empty!\n");
+    return;
+  }
+
+  int val;
+  printf("Enter the value to search: ");
+  scanf("%d", &val);
+  system("cls");
+  Node *curr = list.head;
+  int count = 1;
+  int found = 0;
+
+  while (curr != NULL) {
+    if (curr->val == val) {
+      printf("Value %d found at position %d.\n", val, count);
+      found = 1;
+    }
+    curr = curr->next;
+    count++;
+  }
+
+  if (!found) {
+    printf("Value %d not found in the list.\n", val);
+  }
+}
+
 void freeList(DoublyLinkedList* list) {
   Node* curr = list->head;
   Node* next;
