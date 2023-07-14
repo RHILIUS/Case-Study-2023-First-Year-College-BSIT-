@@ -20,6 +20,11 @@ typedef struct Employee {
   float netPay;
 } Employee;
 
+typedef struct Company {
+  char name[20];
+  char location[20];
+} Company;
+
 // MENU OPTIONS
 void addEmployee(); 
 void viewRecord();
@@ -31,16 +36,21 @@ void clearScreen();
 void checkFile(FILE* file);
 void printBorder();
 void printInvalidInput();
+int getFloatDigitCount(float num);
+int getCenterPosition(int horizontalLength, int stringLength);
+void printToCenter(char str[], int size, int horizontalLength);
+void printHorizontalBorder(int horizontalLength);
 
 // FORMS
 void showMainMenu();
 
 // GLOBAL DECLARATIONS
 FILE *fptr; 
+Company company = {"ABC COMPANY","Makati City"};
 
 // MAIN
 int main() {
-  
+
   showMainMenu();
   char choice = prompt();
   
@@ -50,6 +60,7 @@ int main() {
       addEmployee();
       printf("Press any key to continue...");
       getch();
+      clearScreen();
       main();
       break;
     case '2':
@@ -57,10 +68,16 @@ int main() {
       viewRecord();
       printf("Press any key to continue...");
       getch();
+      clearScreen();
       main();
       break;
+    default:
+      clearScreen();
+      printInvalidInput();
+      main();
   }
   getch();
+
 }
 
 char prompt() {
@@ -97,11 +114,69 @@ void checkFile(FILE* file) {
 }
 
 void printBorder() {
-  printf("---------------------\n");
+  printf("-------------------------------\n");
 }
 
 void printInvalidInput() {
   printf("\033[0;31mInvalid Input!\033[0m\n");
+}
+
+int getFloatDigitCount(float num) {
+  char floatStr[20];
+  sprintf(floatStr, "%.2f", num);
+  int digitCount = 0;
+  for (int i = 0; floatStr[i] != '\0'; i++) {
+    if (floatStr[i] != '.') {
+      digitCount++;
+    }
+  }
+  digitCount++;
+  return digitCount;
+}
+
+int getCenterPosition(int horizontalLength, int stringLength) {
+  
+  int horizontalLength_median;
+  int stringLength_median;
+  int startPosition;
+  
+  // Get the median of the horizontalLength
+  horizontalLength_median = horizontalLength/2;
+  if (horizontalLength % 2 != 0) {
+    horizontalLength_median++;
+  }
+
+  // Get the median of the stringLength
+  stringLength_median = stringLength/2;
+  if (stringLength % 2 != 0) {
+    stringLength_median++;
+  }
+
+  // Get the startPosition
+  startPosition = horizontalLength_median - stringLength_median;
+
+  return startPosition;
+
+}
+
+void printToCenter(char str[], int size, int horizontalLength) {
+
+  int startPosition = getCenterPosition(horizontalLength,size);
+  for (int i = 0; i < horizontalLength; i++) {
+    if (i == startPosition) {
+      printf("%s", str);
+      i = i+size-1;
+    } else {
+      printf(" ");
+    }
+  }
+}
+
+void printHorizontalBorder(int horizontalLength) {
+  for (int i = 0; i < horizontalLength; i++) {
+    printf("-");
+  }
+  printf("\n");
 }
 
 void showMainMenu() {
@@ -141,6 +216,7 @@ void addEmployee() {
   printf("Please provide the following details for the month:\n\n");
   printf("Employee Number : ");
   scanf("%s", employee.num);
+
   printf("<Full Name>\n");
   printf("Surname         : ");
   scanf(" %[^\n]", employee.surname); // '%[^\n]' is done to include white spaces for names ex: 'De Leon', 'De Ocampo'
@@ -148,9 +224,14 @@ void addEmployee() {
   printf("First Name      : ");
   scanf(" %[^\n]", employee.firstName);
   capitalizeName(employee.firstName);
+  printf("<'0' if not applicable>\n");
   printf("Middle Name     : ");
   scanf(" %[^\n]", employee.middleName);
   capitalizeName(employee.middleName);
+  if (employee.middleName[0] == '0') {
+    strcpy(employee.middleName,"");
+  }
+
   statusCodePrompt:
   printf("<R for Regular, C for Casual>\n");
   printf("Status Code     : ");
@@ -198,7 +279,7 @@ void addEmployee() {
   // Calculate Net Pay
   employee.netPay = employee.basicSalary + employee.overTimePay - employee.deductions;
 
-  // Allow the user to review the entered details and provide an opportunity to make modifications if needed.
+  // Allow the user to review the entered details and provide an opportunity to abolish the data
   clearScreen();
   informationReview:
   printf("Information Review\n");
@@ -219,6 +300,7 @@ void addEmployee() {
 
   printf("\nAre you sure you want to proceed and save the entered details? (Y/N)");
   char choice = getch();
+  printf("\n");
   switch (choice) {
     case 'Y':
     case 'y':
@@ -226,7 +308,7 @@ void addEmployee() {
     case 'N':
     case 'n':
       clearScreen();
-      addEmployee();
+      main();
       break;
     default:
       clearScreen();
@@ -241,54 +323,175 @@ void addEmployee() {
 }
 
 void viewRecord() {
-  // Open the file in read mode
-  fptr = fopen("database.bin", "rb");
-  if (fptr == NULL) {
-    printf("Error opening the file!\n");
-    return;
-  }
-
-  // Check the file size to determine the number of records
-  fseek(fptr, 0, SEEK_END);
-  long fileSize = ftell(fptr);
-  rewind(fptr);
   
-  // Calculate the number of records based on the file size
-  int numRecords = fileSize / sizeof(Employee);
 
-  if (numRecords == 0) {
-    printf("No records found!\n");
-    fclose(fptr);
-    return;
-  }
-
-  // Print the header
-  printf("                                ABC COMPANY\n");
-  printf("                                Makati City\n\n");
-  printf("                                  Payroll\n\n");
-  printf("Employee\tEmployee\tStatus\t\tBasic\t\tOvertime\tDeductions\tNet\n");
-  printf("Number\t\tName\t\t\tSalary\t\tPay\t\t\tPay\n");
-
-  // Print the table header
-  printf("-----------------------------------------------------------------------------\n");
-
-  // Read and print each employee record
+  // Declare an employee struct
   Employee employee;
-  for (int i = 1; i <= numRecords; i++) {
-    fread(&employee, sizeof(Employee), 1, fptr);
-    printf("%-15s%-25s%-15s%-15.2f%-15.2f%-15.2f%.2f\n",
-           employee.num,
-           strcat(strcat(strcat(employee.surname, " "), employee.firstName), strcat(" ", employee.middleName)),
-           employee.statusCode,
-           employee.basicSalary,
-           employee.overTimePay,
-           employee.deductions,
-           employee.netPay);
-  }
+  
+  // Determine the maximum output length per field to ensure even column spacing for display.
+  fptr = fopen("database.bin","r"); checkFile(fptr);
+  int i = 1;
+  int numColLength = strlen("Employee Number");
+  int nameColLength = strlen("Employee Name");
+  int statusColLength = strlen("Status Code");
+  int salaryColLength = strlen("Basic Salary");
+  int overtimeColLength = strlen("Overtime Pay");
+  int deductionsColLength = strlen("Deductions");
+  int netpayColLength = strlen("Net Pay");
 
-  // Print the table footer
-  printf("-----------------------------------------------------------------------------\n");
+  while (fread(&employee,sizeof(Employee),1,fptr)) {
+    // printf("%d)\n", i);
+    // i++;
+    // printf("Employee Number: %s%10d\n", employee.num, strlen(employee.num));
+    // printf("Surname        : %s%10d\n", employee.surname, strlen(employee.surname));
+    // printf("First Name     : %s%10d\n", employee.firstName, strlen(employee.firstName));
+    // printf("Status Code    : %s%10d\n", employee.statusCode, strlen(employee.statusCode));
+    // printf("Basic Salary   : %.2f%10d\n", employee.basicSalary,getFloatDigitCount(employee.basicSalary));
+    // printf("Overtime Pay   : %.2f%10d\n", employee.overTimePay, getFloatDigitCount(employee.overTimePay));
+    // printf("Deductions     : %.2f%10d\n", employee.deductions,getFloatDigitCount(employee.deductions));
+    // printf("Net Pay        : %.2f%10d\n", employee.netPay, getFloatDigitCount(employee.netPay));
+    // printBorder();
 
-  // Close the file
+    if (strlen(employee.num) > numColLength) {
+      numColLength = strlen(employee.num);
+    }
+    int employeeNameLength = strlen(employee.surname)+strlen(employee.firstName)+5;
+    if (employeeNameLength > nameColLength) {
+      nameColLength = employeeNameLength;
+    }
+    if (strlen(employee.statusCode) > statusColLength) {
+      statusColLength = strlen(employee.statusCode);
+    }
+    if (getFloatDigitCount(employee.basicSalary) > salaryColLength) {
+      salaryColLength = getFloatDigitCount(employee.basicSalary);
+    }
+    if (getFloatDigitCount(employee.overTimePay) > overtimeColLength) {
+      overtimeColLength = getFloatDigitCount(employee.overTimePay);
+    }
+    if (getFloatDigitCount(employee.deductions) > deductionsColLength) {
+      deductionsColLength = getFloatDigitCount(employee.deductions);
+    }
+    if (getFloatDigitCount(employee.netPay) > netpayColLength) {
+      netpayColLength = getFloatDigitCount(employee.netPay);
+    }
+  }  
+
+  // printf("Max Num : %d\n", numColLength);
+  // printf("Max Name: %d\n", nameColLength);
+  // printf("Max Status: %d\n", statusColLength);
+  // printf("Max Salary: %d\n", salaryColLength);
+  // printf("Max OT: %d\n", overtimeColLength);
+  // printf("Max Deductions: %d\n", deductionsColLength);
+  // printf("Max Netpay: %d\n", netpayColLength);
+  // printBorder();
   fclose(fptr);
+
+  // Print header
+  int horizontalLength = numColLength+nameColLength+statusColLength+salaryColLength+overtimeColLength+deductionsColLength+netpayColLength + 8; // Add 8 for border lines
+
+  printf("\
+                                               ABC COMPANY\n\
+                                               Makati City\n\
+  \n\
+                                                 Payroll\n\
+  ---------------------------------------------------------------------------------------------\n\
+  Employee             Employee            Status     Basic      Overtime  Deductions   Net Pay\n\
+  Number               Name                           Salary     Pay\n");
+  printBorder();
+  // Print header row
+  printToCenter(company.name,strlen(company.name),horizontalLength);
+  printf("\n");
+  printToCenter(company.location, strlen(company.location), horizontalLength);
+  printf("\n\n");
+
+  // print header row top border
+  printHorizontalBorder(horizontalLength);
+
+  printf("|");
+  printToCenter("Employee Number", strlen("Employee Number"), numColLength); printf("|");
+  printToCenter("Employee Name", strlen("Employee Name"), nameColLength); printf("|");
+  printToCenter("Status Code", strlen("Status Code"), statusColLength); printf("|");
+  printToCenter("Basic Salary", strlen("Basic Salary"), salaryColLength); printf("|");
+  printToCenter("Overtime Pay", strlen("Overtime Pay"), overtimeColLength); printf("|");
+  printToCenter("Deductions", strlen("Deductions"), deductionsColLength); printf("|");
+  printToCenter("Net Pay", strlen("Net Pay"), netpayColLength); printf("|");
+  printf("\n");
+
+  // print header row bottom border
+  printHorizontalBorder(horizontalLength);
+
+  // Display employees and fields
+  fptr = fopen("database.bin","rb");
+
+  while (fread(&employee,sizeof(Employee),1,fptr)) {
+    // Employee Number
+    printf("|");
+    printToCenter(employee.num, strlen(employee.num),numColLength);
+
+    // Employee Name
+    char fullname[50];
+    char middleInitial = employee.middleName[0];
+    char temp[2];
+
+    temp[0] = middleInitial;
+    temp[1] = '\0';
+
+    strcpy(fullname, employee.surname);
+    strcat(fullname, ", ");
+    strcat(fullname, employee.firstName);
+    strcat(fullname, " ");
+    strcat(fullname, temp);
+
+    printf("|");
+    printToCenter(fullname,strlen(fullname),nameColLength);
+
+    // Status Code
+    printf("|");
+    printToCenter(employee.statusCode,strlen(employee.statusCode),statusColLength);
+
+    // Basic Salary
+    char tempStr[20];
+
+    printf("|");
+    sprintf(tempStr,"%.2f",employee.basicSalary);
+    printToCenter(tempStr,strlen(tempStr),salaryColLength);
+
+    // Overtime Pay
+    printf("|");
+    sprintf(tempStr, "%.2f", employee.overTimePay);
+    if (employee.overTimePay == 0) {
+      printToCenter("N/A",strlen("N/A"),overtimeColLength);
+    } else {
+      printToCenter(tempStr,strlen(tempStr),overtimeColLength);
+    }
+
+    // Deductions
+    printf("|");
+    sprintf(tempStr, "%.2f", employee.deductions);
+    if (employee.deductions == 0) {
+      printToCenter("N/A",strlen("N/A"),deductionsColLength);
+    } else {
+      printToCenter(tempStr,strlen(tempStr),deductionsColLength);
+    }
+
+    // Net Pay
+    printf("|");
+    sprintf(tempStr, "%.2f", employee.netPay);
+    printToCenter(tempStr,strlen(tempStr),netpayColLength);
+
+    printf("|\n");
+
+  }
+  
+  // Print foot bottom border
+  printHorizontalBorder(horizontalLength);
+  fclose(fptr);
+
+
+  
+  
+
+  
+
+  
 }
