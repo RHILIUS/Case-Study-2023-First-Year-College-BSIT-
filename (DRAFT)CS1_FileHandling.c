@@ -5,8 +5,6 @@
 #include <ctype.h>
 #include <time.h>
 
-#define MAX_TRIES 6
-
 // STRUCT
 typedef struct Employee {
   char num[20];
