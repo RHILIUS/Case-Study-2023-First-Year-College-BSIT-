@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // STRUCT
 typedef struct Node {
@@ -24,7 +25,8 @@ void sortDescending(DoublyLinkedList list);
 void insertNode(DoublyLinkedList *list);
 void deleteNode(DoublyLinkedList *list);
 void searchNumber(DoublyLinkedList list);
-
+void printToCenter(char str[], int size, int horizontalLength);
+int getCenterPosition(int horizontalLength, int stringLength);
 void freeList(DoublyLinkedList* list);
 
 // MENU FUNCTIONS
@@ -35,6 +37,7 @@ void showOption3SubMenu();
 
 // GLOBAL DECLARATION
 DoublyLinkedList list;
+int tableLength;
 
 // MAIN
 int main() {
@@ -126,9 +129,47 @@ int showMainMenu() {
       displayList(list);
       showMainMenu();
       break;
+    case 21:
+      system("cls");
+      printf("You selected normal order\n");
+      displayNormal(list);
+      printf("\nPress any key to exit...");
+      scanf("\n");
+      getchar();
+      system("cls");
+      showMainMenu();
+      break;
+    case 22:
+      system("cls");
+      printf("You selected reverse order\n");
+      displayReverse(list);
+      showMainMenu();
+      break;
     case 3:
       system("cls");
       showOption3SubMenu();
+      break;
+    case 31:
+      system("cls");
+      printf("The list is successfully sorted in Ascending Order\n");
+      sortAscending(list);
+      displayNormal(list);
+      printf("Press any key to exit...");
+      scanf("\n");
+      getchar();
+      system("cls");
+      showMainMenu();
+      break;
+    case 32:
+      system("cls");
+      printf("The list is successfully sorted in Descending Order\n");
+      sortDescending(list);
+      displayNormal(list);
+      printf("Press any key to exit...");
+      scanf("\n");
+      system("cls");
+      getchar();
+      showMainMenu();
       break;
     case 4:
       system("cls");
@@ -181,6 +222,7 @@ void showOption3SubMenu() {
       system("cls");
       printf("The list is successfully sorted in Ascending Order\n");
       sortAscending(list);
+      displayNormal(list);
       printf("Press any key to exit...");
       scanf("\n");
       getchar();
@@ -191,6 +233,7 @@ void showOption3SubMenu() {
       system("cls");
       printf("The list is successfully sorted in Descending Order\n");
       sortDescending(list);
+      displayNormal(list);
       printf("Press any key to exit...");
       scanf("\n");
       system("cls");
@@ -260,7 +303,6 @@ void displayList(DoublyLinkedList list) {
       system("cls");
       printf("You selected normal order\n");
       displayNormal(list);
-
       printf("\nPress any key to exit...");
       scanf("\n");
       getchar();
@@ -292,6 +334,20 @@ void displayNormal(DoublyLinkedList list) {
     curr = curr->next;
   }
   printf("\n");
+
+  // Node *curr = list.head;
+  // system("cls");
+  // printf("Here is your doubly linked list in normal order\n\n");
+
+  // // Calculate the horizontal length
+  // tableLength = 0;
+  // char tempStr[20];
+  // while (curr != NULL) {
+  //   sprintf(tempStr,"%d",curr->val);
+  //   curr = curr->next;
+  //   tableLength += strlen(tempStr);
+  // }
+  // printf("%d\n", tableLength);
  
 }
 
@@ -402,11 +458,16 @@ void deleteNode(DoublyLinkedList *list) {
 
   int position;
   displayNormal(*list);
-  printf("Enter the position to delete (1 for first, 2 for second, and so on): ");
+  printf("Enter the position to delete (1 for first, 2 for second, and so on | 0 to exit): ");
   scanf("%d", &position);
   system("cls");
   Node *curr = list->head;
   int count = 1;
+
+  if (position == 0) {
+    showMainMenu();
+    return;
+  }
 
   while (curr != NULL && count < position) {
     curr = curr->next;
@@ -431,6 +492,7 @@ void deleteNode(DoublyLinkedList *list) {
     free(curr);
     printf("Node at position %d has been deleted.\n", position);
   }
+  deleteNode(list);
 }
 
 void searchNumber(DoublyLinkedList list) {
@@ -459,6 +521,43 @@ void searchNumber(DoublyLinkedList list) {
   if (!found) {
     printf("Value %d not found in the list.\n", val);
   }
+}
+
+void printToCenter(char str[], int size, int horizontalLength) {
+  int startPosition = getCenterPosition(horizontalLength,size);
+  for (int i = 0; i < horizontalLength; i++) {
+    if (i == startPosition) {
+      printf("%s", str);
+      i = i+size-1;
+    } else {
+      printf(" ");
+    }
+  }
+}
+
+int getCenterPosition(int horizontalLength, int stringLength) {
+  
+  int horizontalLength_median;
+  int stringLength_median;
+  int startPosition;
+  
+  // Get the median of the horizontalLength
+  horizontalLength_median = horizontalLength/2;
+  if (horizontalLength % 2 != 0) {
+    horizontalLength_median++;
+  }
+
+  // Get the median of the stringLength
+  stringLength_median = stringLength/2;
+  if (stringLength % 2 != 0) {
+    stringLength_median++;
+  }
+
+  // Get the startPosition
+  startPosition = horizontalLength_median - stringLength_median;
+
+  return startPosition;
+
 }
 
 void freeList(DoublyLinkedList* list) {
