@@ -5,12 +5,14 @@
 #include <ctype.h>
 #include <time.h>
 
+#define MAX_TRIES 6
+
 // STRUCT
 typedef struct Employee {
   char num[20];
-  char surname[10];
+  char surname[15];
   char firstName[15];
-  char middleName[10];
+  char middleName[15];
   char statusCode[8];
   int hoursWorked;
   float deductions;
@@ -21,6 +23,7 @@ typedef struct Employee {
   float netPay;
   time_t timeAdded;
 } Employee;
+
 
 typedef struct Company {
   char name[20];
@@ -51,6 +54,8 @@ void sortTimeReverse(Employee employees[], int count);
 void showRecord();
 time_t getCurrentDateTime();
 char* timeToStr(time_t time);
+int getTableLength();
+void passwordAuthentication();
 
 // FORMS
 void showMainMenu();
@@ -65,6 +70,7 @@ int horizontalLength;
 // MAIN
 int main() {
 
+  clearScreen();
   showMainMenu();
   char choice = prompt();
   
@@ -77,9 +83,17 @@ int main() {
       clearScreen();
       main();
       break;
-    case '2':
+    case '2':    
       clearScreen();
       viewRecord();
+      clearScreen();
+      main();
+      break;
+    case '3':
+      clearScreen();
+      updateRecord();
+      printf("Press any key to continue...");
+      getch();
       clearScreen();
       main();
       break;
@@ -99,7 +113,11 @@ int main() {
       printInvalidInput();
       main();
   }
+
+  // updateRecord();
   getch();
+
+  return 0;
 }
 
 char prompt() {
@@ -455,6 +473,121 @@ char* timeToStr(time_t time) {
     return dateTimeStr;
 }
 
+int getTableLength() {
+  mainFile = fopen("main.bin","r"); checkFile(mainFile);
+  int i = 1;
+  int countColLength = strlen("#");
+  int numColLength = strlen("Employee Number");
+  int nameColLength = strlen("Employee Name");
+  int statusColLength = strlen("Status Code");
+  int salaryColLength = strlen("Basic Salary");
+  int overtimeColLength = strlen("Overtime Pay");
+  int deductionsColLength = strlen("Deductions");
+  int netpayColLength = strlen("Net Pay");
+  int timeColLength = strlen("Date Modified");
+  
+  int count = 0;
+  char strCount[10];
+  while (fread(&employee,sizeof(Employee),1,mainFile)) {
+    count++;
+    sprintf(strCount, "%d", count);
+    if (strlen(strCount) > countColLength) {
+      countColLength = strlen(strCount);
+    }
+    if (strlen(employee.num) > numColLength) {
+      numColLength = strlen(employee.num);
+    }
+    int employeeNameLength = strlen(employee.surname)+strlen(employee.firstName)+5;
+    if (employeeNameLength > nameColLength) {
+      nameColLength = employeeNameLength;
+    }
+    if (strlen(employee.statusCode) > statusColLength) {
+      statusColLength = strlen(employee.statusCode);
+    }
+    if (getFloatDigitCount(employee.basicSalary) > salaryColLength) {
+      salaryColLength = getFloatDigitCount(employee.basicSalary);
+    }
+    if (getFloatDigitCount(employee.overTimePay) > overtimeColLength) {
+      overtimeColLength = getFloatDigitCount(employee.overTimePay);
+    }
+    if (getFloatDigitCount(employee.deductions) > deductionsColLength) {
+      deductionsColLength = getFloatDigitCount(employee.deductions);
+    }
+    if (getFloatDigitCount(employee.netPay) > netpayColLength) {
+      netpayColLength = getFloatDigitCount(employee.netPay);
+    }
+    if (strlen(timeToStr(employee.timeAdded)) > timeColLength) {
+      timeColLength = strlen(timeToStr(employee.timeAdded));
+    }
+  }  
+
+  // Add 2 spaces between the text for better spacing
+  countColLength += 2;
+  numColLength += 2;
+  nameColLength += 2;
+  statusColLength += 2;
+  salaryColLength += 2;
+  overtimeColLength += 2;
+  deductionsColLength += 2;
+  netpayColLength += 2;
+  timeColLength += 2;
+
+  fclose(mainFile);
+
+  // Print header
+  horizontalLength = countColLength+numColLength+nameColLength+statusColLength+salaryColLength+overtimeColLength+deductionsColLength+netpayColLength+timeColLength + 10; // Add 10 for border lines 
+
+  return horizontalLength;
+}
+
+void passwordAuthentication() {
+  char temp;
+  char pass[] = "pupqc123";
+  char user_input[100];
+  int remaining_tries = MAX_TRIES;
+  int i;
+  int backspaces = 0;
+
+  while (remaining_tries > 0) {
+    printf("Enter password: ");
+    // Accept password and hide every inputted character with '*'
+    for (i = 0; i < sizeof(user_input) - 1; i++) {
+      temp = getch();
+
+      if (temp == '\b' && temp != user_input[100]) {
+        backspaces++;
+        printf("\b \b");
+      } else {
+        printf("*");
+        user_input[i] = temp;
+      }
+      if (temp == '\r' || temp == '\n') {
+        break;
+      }
+      user_input[i] = temp;
+    }
+    user_input[i] = '\0'; // put a null character at the end of the string
+    printf("\n"); // add a new line every time the scan is finished
+
+    if (strcmp(user_input, pass) == 0) {
+      printf("Welcome to PUP Quezon City!\n");
+      // insert the main menu func
+      break;
+    } else if (strcmp(user_input, pass) != 0 && remaining_tries > 1) {
+      printf("\nWrong password!");
+      printf("\nRemaining tries: %d\n", remaining_tries - 1);
+    }
+    remaining_tries--;
+
+    if (remaining_tries == 0) {
+      printf("\nEntry Denied! Only authorized personnel can access.\n");
+    }
+
+    printf("-------------------------------------------------------\n");
+  }
+}
+
+
 void showMainMenu() {
   printf("\
                 ABC Company Payroll System\n\
@@ -680,12 +813,25 @@ void viewRecord() {
 void deleteRecord() {
   showRecord();
 
+  // Get the last index to get the possible index input
+  mainFile = fopen("main.bin","rb"); checkFile(mainFile);
+  int count1 = 0;
+  while (fread(&employee,sizeof(Employee),1,mainFile)) {
+    count1++;
+  }
+  fclose(mainFile);
+
+
   printf("Enter index to delete (0 to exit): ");
   int index;
   scanf("%d", &index);
 
   if (index == 0) {
-    return; // Exit the function
+    clearScreen();
+    main(); // Exit the function
+  } else if (index < 0 || index > count1) {
+    printInvalidInput();
+    deleteRecord();
   }
 
   // Open the main and temp files
@@ -717,3 +863,167 @@ void deleteRecord() {
 
 }
 
+void updateRecord() {
+
+  horizontalLength = getTableLength();
+  printToCenter("UPDATE RECORD", strlen("UPDATE RECORD"),horizontalLength);
+  printf("\n\n");
+
+  showRecord();
+
+  // Get the last index to get the possible index input
+  mainFile = fopen("main.bin","rb"); checkFile(mainFile);
+  int count = 0;
+  while (fread(&employee,sizeof(Employee),1,mainFile)) {
+    count++;
+  }
+  fclose(mainFile);
+
+  // Ask the user for the index
+  int index = 0;
+  printf("Enter index to update (0 to exit): ");
+  scanf("%d", &index);
+
+  if (index < 0 || index > count) {\
+    clearScreen();
+    printInvalidInput();
+    updateRecord();
+  } else if (index == 0) {
+    clearScreen();
+    main();
+  }
+
+  // Update the record at index specified
+  mainFile = fopen("main.bin", "rb+"); checkFile(mainFile);
+  tempFile = fopen("temp.bin", "wb"); checkFile(mainFile);
+
+  count = 1;
+  while (fread(&employee,sizeof(Employee),1,mainFile)) {
+    if (count == index) {
+      clearScreen();
+      printf("Please provide the following details for the month:\n\n");
+
+      printf("Employee Number : ");
+      scanf("%s", employee.num);
+      printf("<Full Name>\n");
+      printf("Surname         : ");
+      scanf(" %[^\n]", employee.surname); // '%[^\n]' is done to include white spaces for names ex: 'De Leon', 'De Ocampo'
+      capitalizeName(employee.surname);
+      printf("First Name      : ");
+      scanf(" %[^\n]", employee.firstName);
+      capitalizeName(employee.firstName);
+      printHorizontalBorder(strlen("Please provide the following details for the month:"));
+      printf("<'0' if not applicable>\n");
+      printf("Middle Name     : ");
+      scanf(" %[^\n]", employee.middleName);
+      capitalizeName(employee.middleName);
+      if (employee.middleName[0] == '0') {
+        strcpy(employee.middleName,"");
+      }
+
+      statusCodePrompt:
+      printHorizontalBorder(strlen("Please provide the following details for the month:"));
+      printf("<R for Regular, C for Casual>\n");
+      printf("Status Code     : ");
+      char statusCode;
+      scanf(" %c", &statusCode); // white space before '%c' to disregard '\n' from the previous input 
+      statusCode = toupper(statusCode); // statusCode is set to uppercase for consistency
+      if (statusCode != 'R' && statusCode != 'C') { // input the value again if invalid
+        clearScreen();
+        printInvalidInput();
+        goto statusCodePrompt;
+      }
+      if (statusCode == 'R') {
+        strcpy(employee.statusCode,"Regular");
+      } else {
+        strcpy(employee.statusCode,"Casual");
+      }
+      printf("Hours Worked    : "); 
+      scanf("%d", &employee.hoursWorked);
+      printf("Deductions      : ");
+      scanf("%f", &employee.deductions);
+
+      // If statusCode is "Regular"
+      if (stricmp(employee.statusCode,"Regular") == 0) {
+        printf("Basic Salary    : ");
+        scanf("%f", &employee.basicSalary);
+        if (employee.hoursWorked > 160) {
+          employee.basicRate = employee.basicSalary / 160;
+          employee.overTimeRate = employee.basicRate * 1.5;
+          employee.overTimePay = employee.overTimeRate * (employee.hoursWorked - 160);
+        }
+      }
+      // If statusCode is "Casual"
+      else {
+        printf("Basic Rate      : ");
+        scanf("%f",&employee.basicRate);
+        employee.basicSalary = employee.hoursWorked * employee.basicRate;
+        if (employee.hoursWorked > 160) {
+          employee.basicSalary = employee.basicRate * 160;
+          employee.overTimeRate = employee.basicRate * 1.5;
+          employee.overTimePay = employee.overTimeRate * (employee.hoursWorked - 160);
+        }
+
+      }
+
+      // Calculate Net Pay
+      employee.netPay = employee.basicSalary + employee.overTimePay - employee.deductions;
+       // Allow the user to review the entered details and provide an opportunity to abolish the data
+      clearScreen();
+      informationReview:
+      printf("\033[0;32m%s\033[0m\n", "Information Review\n");
+      printBorder();
+      printf("\n");
+      printf("Employee Number : %s\n", employee.num);
+      printf("Surname         : %s\n", employee.surname);
+      printf("First Name      : %s\n", employee.firstName);
+      printf("Middle Name     : %s\n", employee.middleName);
+      printf("Status Code     : %s\n", employee.statusCode);
+      printf("Hours Worked    : %d\n", employee.hoursWorked);
+      printf("Deductions      : %.2f\n", employee.deductions);
+      if (stricmp(employee.statusCode,"Regular")==0) {
+        printf("Basic Salary    : %.2f\n", employee.basicSalary);
+      } else {
+        printf("Basic Rate      : %.2f\n", employee.basicRate);
+      }
+
+      printf("\nAre you sure you want to proceed and save the entered details? (Y/N)");
+      char choice = getch();
+      printf("\n");
+      switch (choice) {
+        case 'Y':
+        case 'y':
+          break;
+        case 'N':
+        case 'n':
+          clearScreen();
+          main();
+          break;
+        default:
+          clearScreen();
+          printInvalidInput();
+          goto informationReview;
+      }
+      
+      // Add time current time to file
+      employee.timeAdded = getCurrentDateTime();
+
+      // // Append employee to the file
+      // mainFile = fopen("main.bin","ab"); checkFile(mainFile);
+      // fwrite(&employee, sizeof(Employee),1, mainFile);
+      // fclose(mainFile);
+
+    }
+        fwrite(&employee,sizeof(Employee),1,tempFile);
+        count++;
+  }
+
+  fclose(mainFile);
+  fclose(tempFile);
+
+  remove("main.bin");
+  rename("temp.bin", "main.bin");
+  
+  clearScreen();
+  updateRecord();
+}
