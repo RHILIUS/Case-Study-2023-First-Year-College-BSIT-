@@ -112,7 +112,6 @@ int main() {
       main();
   }
 
-  // updateRecord();
   getch();
 
   return 0;
@@ -668,6 +667,7 @@ void addEmployee() {
     case 'n':
       clearScreen();
       main();
+      return;
       break;
     default:
       clearScreen();
@@ -779,6 +779,7 @@ void deleteRecord() {
   if (index == 0) {
     clearScreen();
     main(); // Exit the function
+    return;
   } else if (index < 0 || index > count1) {
     printInvalidInput();
     deleteRecord();
@@ -841,6 +842,7 @@ void updateRecord() {
   } else if (index == 0) {
     clearScreen();
     main();
+    return;
   }
 
   // Update the record at index specified
