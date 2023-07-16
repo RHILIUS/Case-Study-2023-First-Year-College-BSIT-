@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <conio.h>
 
 // STRUCT
 typedef struct Node {
@@ -19,14 +20,13 @@ int prompt();
 DoublyLinkedList createList();
 void displayList(DoublyLinkedList list);
 void displayNormal(DoublyLinkedList list);
+void displayNormalForDelete(DoublyLinkedList list);
 void displayReverse(DoublyLinkedList list);
 void sortAscending(DoublyLinkedList list);
 void sortDescending(DoublyLinkedList list);
 void insertNode(DoublyLinkedList *list);
 void deleteNode(DoublyLinkedList *list);
 void searchNumber(DoublyLinkedList list);
-void printToCenter(char str[], int size, int horizontalLength);
-int getCenterPosition(int horizontalLength, int stringLength);
 void freeList(DoublyLinkedList* list);
 
 // MENU FUNCTIONS
@@ -88,6 +88,7 @@ int showInitialMenu() {
         system("cls");
         printf("Invalid choice!\n");
         main();
+        return 0;
   }
   return 0;
 }
@@ -119,6 +120,8 @@ int showMainMenu() {
       system("cls");
       if (list.head == NULL) {
         printf("The list is empty!\n"); 
+        showInitialMenu();
+        return 0;
       } else {
         printf("\nYou successfully created your doubly linked list!\n");
       }
@@ -134,8 +137,7 @@ int showMainMenu() {
       printf("You selected normal order\n");
       displayNormal(list);
       printf("\nPress any key to exit...");
-      scanf("\n");
-      getchar();
+      getch();
       system("cls");
       showMainMenu();
       break;
@@ -151,12 +153,12 @@ int showMainMenu() {
       break;
     case 31:
       system("cls");
+      system("cls");
       printf("The list is successfully sorted in Ascending Order\n");
       sortAscending(list);
       displayNormal(list);
       printf("Press any key to exit...");
-      scanf("\n");
-      getchar();
+      getch();
       system("cls");
       showMainMenu();
       break;
@@ -166,9 +168,8 @@ int showMainMenu() {
       sortDescending(list);
       displayNormal(list);
       printf("Press any key to exit...");
-      scanf("\n");
+      getch();
       system("cls");
-      getchar();
       showMainMenu();
       break;
     case 4:
@@ -189,7 +190,7 @@ int showMainMenu() {
     case 7:
       system("cls");
       printf("Thank you for using the program. Have a great day!\n");
-      return 0;
+      exit(0);
     default:
       system("cls");
       printf("Invalid choice!\n");
@@ -224,8 +225,7 @@ void showOption3SubMenu() {
       sortAscending(list);
       displayNormal(list);
       printf("Press any key to exit...");
-      scanf("\n");
-      getchar();
+      getch();
       system("cls");
       showOption3SubMenu();
       break;
@@ -235,9 +235,8 @@ void showOption3SubMenu() {
       sortDescending(list);
       displayNormal(list);
       printf("Press any key to exit...");
-      scanf("\n");
+      getch();
       system("cls");
-      getchar();
       showOption3SubMenu();
       break;
     case 3:
@@ -304,8 +303,7 @@ void displayList(DoublyLinkedList list) {
       printf("You selected normal order\n");
       displayNormal(list);
       printf("\nPress any key to exit...");
-      scanf("\n");
-      getchar();
+      getch();
       system("cls");
       break;
     case 2:
@@ -326,7 +324,6 @@ void displayList(DoublyLinkedList list) {
 
 void displayNormal(DoublyLinkedList list) {
   Node *curr = list.head;
-  system("cls");
   printf("Here is your doubly linked list in normal order\n\n");
 
   while (curr != NULL) {
@@ -335,25 +332,29 @@ void displayNormal(DoublyLinkedList list) {
   }
   printf("\n");
 
-  // Node *curr = list.head;
-  // system("cls");
-  // printf("Here is your doubly linked list in normal order\n\n");
-
-  // // Calculate the horizontal length
-  // tableLength = 0;
-  // char tempStr[20];
-  // while (curr != NULL) {
-  //   sprintf(tempStr,"%d",curr->val);
-  //   curr = curr->next;
-  //   tableLength += strlen(tempStr);
-  // }
-  // printf("%d\n", tableLength);
  
+ 
+}
+
+void displayNormalForDelete(DoublyLinkedList list) {
+  Node *curr = list.head;
+  printf("Here is your doubly linked list in normal order\n\n");
+
+  int count = 1;
+  printf("#\n");
+  while (curr != NULL) {
+    printf("%d.) ", count);
+    printf("%d\n", curr->val);
+    curr = curr->next;
+
+    count++;
+  }
+  printf("\n");
+
 }
 
 void displayReverse(DoublyLinkedList list) {
   Node *curr = list.tail;
-  system("cls");
   printf("Here is your doubly linked list in reverse order\n\n");
   while (curr != NULL) {
     printf("%d|", curr->val);
@@ -361,8 +362,7 @@ void displayReverse(DoublyLinkedList list) {
   }
   printf("\n");
   printf("\nPress any key to exit...");
-  scanf("\n");
-  getchar();
+  getch();
   system("cls");
 }
 
@@ -421,9 +421,18 @@ void insertNode(DoublyLinkedList *list) {
     list->tail = newNode;
   } else {
     int position;
+    system("cls");
+
+    EnterPosition:
     displayNormal(*list);
-    printf("Enter the position to insert (1 for first, 2 for second, and so on): ");
+    printf("Enter the position to insert (1 for first, 2 for second, and so on | 0 to exit): ");
     scanf("%d", &position);
+
+    if (position == 0) {
+      system("cls");
+      showMainMenu();
+      return;
+    }
 
     Node *curr = list->head;
     int count = 1;
@@ -432,11 +441,11 @@ void insertNode(DoublyLinkedList *list) {
       curr = curr->next;
       count++;
     }
-    
-    system("cls");
+    system("cls");  
     if (curr == NULL) {
-      printf("Invalid position!\n");
-      free(newNode);
+      printf("\033[1;31mInvalid Position!\033[0m\n");
+      // free(newNode);
+      goto EnterPosition;
     } else {
       newNode->prev = curr->prev;
       newNode->next = curr;
@@ -446,8 +455,35 @@ void insertNode(DoublyLinkedList *list) {
         list->head = newNode;
       }
       curr->prev = newNode;
+      printf("\033[1;32mSuccessfully inserted value at position %d\033[0m\n", position);
+      displayNormal(*list);
     }
   }
+
+  // Ask the user whether they want to insert another node
+  AskUser:
+  printf("Do you want to insert another node? (Y/N)");
+  char choice = getch();
+  
+  switch(choice) {
+    case 'Y':
+    case 'y':
+      system("cls");
+      insertNode(list);
+      return;
+      break;
+    case 'N':
+    case 'n':
+      system("cls"); 
+       main();
+      return;
+      break;
+    default:
+      system("cls");
+      printf("\033[1;31mInvalid Input!\033[0m\n");
+      goto AskUser;
+  }
+  
 }
 
 void deleteNode(DoublyLinkedList *list) {
@@ -457,7 +493,7 @@ void deleteNode(DoublyLinkedList *list) {
   }
 
   int position;
-  displayNormal(*list);
+  displayNormalForDelete(*list);
   printf("Enter the position to delete (1 for first, 2 for second, and so on | 0 to exit): ");
   scanf("%d", &position);
   system("cls");
@@ -475,7 +511,7 @@ void deleteNode(DoublyLinkedList *list) {
   }
 
   if (curr == NULL) {
-    printf("Invalid position!\n");
+    printf("\033[1;31mInvalid Position!\033[0m\n");
   } else {
     if (curr->prev != NULL) {
       curr->prev->next = curr->next;
@@ -490,7 +526,7 @@ void deleteNode(DoublyLinkedList *list) {
     }
 
     free(curr);
-    printf("Node at position %d has been deleted.\n", position);
+    printf("\033[1;32mNode at position %d has been deleted.\033[0m\n", position);
   }
   deleteNode(list);
 }
@@ -500,7 +536,7 @@ void searchNumber(DoublyLinkedList list) {
     printf("The list is empty!\n");
     return;
   }
-
+  
   int val;
   printf("Enter the value to search: ");
   scanf("%d", &val);
@@ -511,7 +547,7 @@ void searchNumber(DoublyLinkedList list) {
 
   while (curr != NULL) {
     if (curr->val == val) {
-      printf("Value %d found at position %d.\n", val, count);
+      printf("\033[1;32mValue %d found at position %d.\033[0m\n", val, count);
       found = 1;
     }
     curr = curr->next;
@@ -519,44 +555,29 @@ void searchNumber(DoublyLinkedList list) {
   }
 
   if (!found) {
-    printf("Value %d not found in the list.\n", val);
-  }
-}
-
-void printToCenter(char str[], int size, int horizontalLength) {
-  int startPosition = getCenterPosition(horizontalLength,size);
-  for (int i = 0; i < horizontalLength; i++) {
-    if (i == startPosition) {
-      printf("%s", str);
-      i = i+size-1;
-    } else {
-      printf(" ");
-    }
-  }
-}
-
-int getCenterPosition(int horizontalLength, int stringLength) {
-  
-  int horizontalLength_median;
-  int stringLength_median;
-  int startPosition;
-  
-  // Get the median of the horizontalLength
-  horizontalLength_median = horizontalLength/2;
-  if (horizontalLength % 2 != 0) {
-    horizontalLength_median++;
+    printf("\033[1;31m%d is not in the list.\033[0m\n", val);
   }
 
-  // Get the median of the stringLength
-  stringLength_median = stringLength/2;
-  if (stringLength % 2 != 0) {
-    stringLength_median++;
+  // Ask the user if they want to search for another number
+  AskUser:
+  printf("Do you want to search another number? (Y/N)");
+  char choice = getch();
+  printf("\n");
+  system("cls");
+  switch (choice) {
+    case 'y':
+    case 'Y':
+      searchNumber(list);
+      return;
+      break;
+    case 'N':
+    case 'n':
+      return;
+      break;
+    default:
+      printf("\033[1;31mInvalid Input!\033[0m\n");
+      goto AskUser;
   }
-
-  // Get the startPosition
-  startPosition = horizontalLength_median - stringLength_median;
-
-  return startPosition;
 
 }
 
