@@ -86,7 +86,7 @@ int showInitialMenu() {
         break;
       default:
         system("cls");
-        printf("Invalid choice!\n");
+        printf("\033[0;31mInvalid choice!\033[0m\n");
         main();
         return 0;
   }
@@ -180,7 +180,11 @@ int showMainMenu() {
     case 5:
       system("cls");
       deleteNode(&list);
-      showMainMenu();
+      if (list.head == NULL) {
+        showInitialMenu();        
+      } else {
+        showMainMenu();
+      }
       break;
     case 6:
       system("cls");
@@ -193,7 +197,7 @@ int showMainMenu() {
       exit(0);
     default:
       system("cls");
-      printf("Invalid choice!\n");
+      printf("\033[0;31mInvalid choice!\033[0m\n");
       showMainMenu();
   }
   return 0;
@@ -245,7 +249,7 @@ void showOption3SubMenu() {
       break;
     default:
       system("cls");
-      printf("Invalid choice\n");
+      printf("\033[0;31mInvalid choice!\033[0m\n");
       showOption3SubMenu();
   }
 }
@@ -317,7 +321,7 @@ void displayList(DoublyLinkedList list) {
       break;
     default:
       system("cls");
-      printf("Invalid choice!\n");
+      printf("\033[0;31mInvalid choice!\033[0m\n");
       displayList(list);
   }
 }
@@ -338,7 +342,7 @@ void displayNormal(DoublyLinkedList list) {
 
 void displayNormalWithIndex(DoublyLinkedList list) {
   Node *curr = list.head;
-  printf("Here is your doubly linked list in normal order\n\n");
+  printf("Here is your doubly linked list\n\n");
 
   int count = 1;
   printf("#\n");
@@ -432,17 +436,18 @@ void insertNode(DoublyLinkedList *list) {
       system("cls");
       showMainMenu();
       return;
-    }
+    } 
+    
 
     Node *curr = list->head;
     int count = 1;
-
+  
     while (curr != NULL && count < position) {
       curr = curr->next;
       count++;
     }
     system("cls");  
-    if (curr == NULL) {
+    if (curr == NULL || position < 0) {
       printf("\033[1;31mInvalid Position!\033[0m\n");
       // free(newNode);
       goto EnterPosition;
@@ -510,7 +515,7 @@ void deleteNode(DoublyLinkedList *list) {
     count++;
   }
 
-  if (curr == NULL) {
+  if (curr == NULL || position < 0) {
     printf("\033[1;31mInvalid Position!\033[0m\n");
   } else {
     if (curr->prev != NULL) {
