@@ -454,7 +454,7 @@ void showRecord() {
   // Print foot bottom border
   printHorizontalBorder(horizontalLength);
   fclose(mainFile);
-}
+} // end of showRecord
 
 time_t getCurrentDateTime() {
     time_t currentTime = time(NULL); // Get the current time
@@ -782,6 +782,7 @@ void deleteRecord() {
     return;
   } else if (index < 0 || index > count1) {
     printInvalidInput();
+    clearScreen();
     deleteRecord();
   }
 
