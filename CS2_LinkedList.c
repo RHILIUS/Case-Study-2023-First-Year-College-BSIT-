@@ -20,7 +20,7 @@ int prompt();
 DoublyLinkedList createList();
 void displayList(DoublyLinkedList list);
 void displayNormal(DoublyLinkedList list);
-void displayNormalForDelete(DoublyLinkedList list);
+void displayNormalWithIndex(DoublyLinkedList list);
 void displayReverse(DoublyLinkedList list);
 void sortAscending(DoublyLinkedList list);
 void sortDescending(DoublyLinkedList list);
@@ -336,7 +336,7 @@ void displayNormal(DoublyLinkedList list) {
  
 }
 
-void displayNormalForDelete(DoublyLinkedList list) {
+void displayNormalWithIndex(DoublyLinkedList list) {
   Node *curr = list.head;
   printf("Here is your doubly linked list in normal order\n\n");
 
@@ -424,7 +424,7 @@ void insertNode(DoublyLinkedList *list) {
     system("cls");
 
     EnterPosition:
-    displayNormal(*list);
+    displayNormalWithIndex(*list);
     printf("Enter the position to insert (1 for first, 2 for second, and so on | 0 to exit): ");
     scanf("%d", &position);
 
@@ -456,7 +456,7 @@ void insertNode(DoublyLinkedList *list) {
       }
       curr->prev = newNode;
       printf("\033[1;32mSuccessfully inserted value at position %d\033[0m\n", position);
-      displayNormal(*list);
+      displayNormalWithIndex(*list);
     }
   }
 
@@ -493,7 +493,7 @@ void deleteNode(DoublyLinkedList *list) {
   }
 
   int position;
-  displayNormalForDelete(*list);
+  displayNormalWithIndex(*list);
   printf("Enter the position to delete (1 for first, 2 for second, and so on | 0 to exit): ");
   scanf("%d", &position);
   system("cls");
